@@ -130,7 +130,7 @@
             var arguments = new string[] { "--svg", "--flat", "--tight", "--output", vectorPath, path };
             var delimited = string.Join(" ", arguments);
 
-            var startInfo = new ProcessStartInfo("lib/potrace-1.11.win64/potrace.exe", delimited)
+            var startInfo = new ProcessStartInfo("lib/potrace-1.16.win64/potrace.exe", delimited)
             {
                 UseShellExecute = false
             };

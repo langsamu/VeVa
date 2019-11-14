@@ -1,4 +1,0 @@
-rename to Veva
-Create shortcut icon
-upgrade .NET
-upgrade stylecop?
