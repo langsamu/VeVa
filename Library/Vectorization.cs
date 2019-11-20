@@ -1,39 +1,13 @@
 ﻿namespace langsamu.VeVa
 {
-    using AForge;
-    using AForge.Imaging;
-    using AForge.Imaging.Filters;
+    using ImageMagick;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using System.Drawing;
-    using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
 
     public static class Vectorization
     {
-        private static FiltersSequence contrastFilters;
-
-        private static FiltersSequence selectionFilters;
-
-        static Vectorization()
-        {
-            Vectorization.contrastFilters = new FiltersSequence(new IFilter[] 
-            {
-                Grayscale.CommonAlgorithms.Y,
-                new Threshold(200),
-                new Closing()
-            });
-
-            Vectorization.selectionFilters = new FiltersSequence(new IFilter[] 
-            {
-                new ColorFiltering(new IntRange(255, 255), new IntRange(0, 0), new IntRange(255, 255)),
-                Grayscale.CommonAlgorithms.Y,
-                new Threshold(72),
-                new Invert()
-            });
-        }
-
         public static IEnumerable<string> Convert(IEnumerable<string> paths)
         {
             return paths.SelectMany(Vectorization.Convert);
@@ -50,8 +24,7 @@
 
             foreach (var selected in cropped)
             {
-                var enhanced = Vectorization.Enhance(selected);
-                var traced = Vectorization.Trace(enhanced);
+                var traced = Vectorization.Trace(selected);
 
                 // TODO: move format to config
                 var formatted = string.Format("{0}.{1:D4}.svg", file, counter);
@@ -68,58 +41,38 @@
 
         private static IEnumerable<string> Crop(string path)
         {
-            using (var original = AForge.Imaging.Image.FromFile(path))
+            using var original = new MagickImage(path);
+            using var borders = original.Clone();
+            borders.InverseOpaque(MagickColor.FromRgb(255, 0, 255), MagickColors.Black);
+
+            var components = borders.ConnectedComponents(new ConnectedComponentsSettings { MeanColor = true })
+                .Where(component => !(component.X == 0 && component.Y == 0 && component.Width == original.Width && component.Height == original.Height))
+                .Where(component => component.Color == MagickColors.Black);
+
+            if (components.Any())
             {
-                using (var selection = Vectorization.HighlightSelection(original))
+                foreach (var component in components)
                 {
-                    var counter = Vectorization.CreateCounter(original, selection);
+                    using var mask = borders.Clone();
+                    mask.FloodFill(MagickColors.White, component.Centroid, MagickColors.Black);
+                    mask.Crop(component.ToGeometry());
+                    mask.InverseOpaque(MagickColors.White, MagickColors.Black);
 
-                    var blobs = counter.GetObjects(original, false);
+                    using var content = original.Clone(component.ToGeometry());
+                    content.Composite(mask, CompositeOperator.Multiply);
+                    mask.Negate();
+                    content.Composite(mask, CompositeOperator.Plus);
 
-                    if (blobs.Any())
-                    {
-                        foreach (var blob in blobs)
-                        {
-                            yield return Vectorization.ExtractSelection(blob, counter, selection);
-                        }
-                    }
-                    else
-                    {
-                        // No blobs means no selection, no cutting required, process whole image
-                        yield return path;
-                    }
+                    var result = Path.GetTempFileName();
+                    content.Write(result, MagickFormat.Bmp);
+
+                    yield return result;
                 }
             }
-        }
-
-        private static BlobCounter CreateCounter(Bitmap original, Bitmap selection)
-        {
-            var counter = new BlobCounter();
-
-            counter.BlobsFilter = new ExcludeOriginalFilter(original);
-            counter.FilterBlobs = true;
-            counter.ObjectsOrder = ObjectsOrder.Area;
-
-            counter.ProcessImage(selection);
-
-            return counter;
-        }
-
-        private static string ExtractSelection(Blob blob, BlobCounter counter, Bitmap selectionsImage)
-        {
-            var selected = blob.Image;
-
-            counter.ExtractBlobsImage(selectionsImage, blob, false);
-
-            var mask = AForge.Imaging.Image.Clone(blob.Image.ToManagedImage(), selected.PixelFormat);
-
-            using (var combined = Vectorization.Combine(selected, mask))
+            else
             {
-                var destination = Path.GetTempFileName();
-
-                combined.Save(destination);
-
-                return destination;
+                // No blobs means no selection, no cutting required, process whole image
+                yield return path;
             }
         }
 
@@ -144,39 +97,6 @@
             process.WaitForExit();
 
             return vectorPath;
-        }
-
-        private static string Enhance(string path)
-        {
-            var result = Path.GetTempFileName();
-
-            using (var original = AForge.Imaging.Image.FromFile(path))
-            {
-                using (var filtered = Vectorization.contrastFilters.Apply(original))
-                {
-                    filtered.Save(result, ImageFormat.Bmp);
-                }
-            }
-
-            return result;
-        }
-
-        private static Bitmap HighlightSelection(Bitmap original)
-        {
-            var clone = AForge.Imaging.Image.Clone(original, PixelFormat.Format32bppArgb);
-
-            return Vectorization.selectionFilters.Apply(clone);
-        }
-
-        private static Bitmap Combine(UnmanagedImage selected, Bitmap mask)
-        {
-            var filters = new FiltersSequence(new IFilter[] 
-            {
-                new Invert(),
-                new Add(selected)
-            });
-
-            return filters.Apply(mask);
         }
     }
 }
