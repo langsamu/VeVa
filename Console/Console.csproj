@@ -3,10 +3,27 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.0</TargetFramework>
+    <AssemblyName>VeVa</AssemblyName>
+    
+    <PotraceVersion>1.16</PotraceVersion>
+    <PotraceFolder>lib</PotraceFolder>
+    <PotraceExe>$(PotraceFolder)\potrace-$(PotraceVersion).win64\potrace.exe</PotraceExe>
+    <PotraceDownloadUrl>http://potrace.sourceforge.net/download/$(PotraceVersion)/potrace-$(PotraceVersion).win64.zip</PotraceDownloadUrl>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Library\Library.csproj" />
+    <PackageReference Include="Magick.NET-Q8-x64" Version="7.14.5" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Include="$(PotraceExe)">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <Target Name="GetPotrace" BeforeTargets="BeforeBuild" Condition="!Exists('$(OutputPath)\$(PotraceExe)')">
+    <DownloadFile SourceUrl="$(PotraceDownloadUrl)" DestinationFolder="$(PotraceFolder)" DestinationFileName="potrace.zip" />
+    <Unzip SourceFiles="$(PotraceFolder)\potrace.zip" DestinationFolder="$(PotraceFolder)" OverwriteReadOnlyFiles="true" ContinueOnError="true" />
+  </Target>
 
 </Project>

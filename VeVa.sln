@@ -5,8 +5,6 @@ VisualStudioVersion = 16.0.29509.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Console", "Console\Console.csproj", "{15A219DF-09ED-402B-8F60-CEB7ED4734E2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Library", "Library\Library.csproj", "{2BBEED97-66DC-4158-9DB9-30B848BB3227}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{71CAA088-ACEA-4850-9A89-D04853CCE86C}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
@@ -22,10 +20,6 @@ Global
 		{15A219DF-09ED-402B-8F60-CEB7ED4734E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{15A219DF-09ED-402B-8F60-CEB7ED4734E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{15A219DF-09ED-402B-8F60-CEB7ED4734E2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2BBEED97-66DC-4158-9DB9-30B848BB3227}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2BBEED97-66DC-4158-9DB9-30B848BB3227}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2BBEED97-66DC-4158-9DB9-30B848BB3227}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2BBEED97-66DC-4158-9DB9-30B848BB3227}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
