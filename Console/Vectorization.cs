@@ -54,7 +54,7 @@
                 foreach (var component in components)
                 {
                     using var mask = borders.Clone();
-                    mask.FloodFill(MagickColors.White, component.Centroid, MagickColors.Black);
+                    mask.FloodFill(MagickColors.White, (int)component.Centroid.X, (int)component.Centroid.Y, MagickColors.Black);
                     mask.Crop(component.ToGeometry());
                     mask.InverseOpaque(MagickColors.White, MagickColors.Black);
 

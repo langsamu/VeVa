@@ -1,0 +1,11 @@
+
+<Solution>
+  <Projects>
+    <Project Path="Console\Console.csproj" />
+  </Projects>
+
+  <SolutionItems>
+    <Item Path=".gitignore" />
+  </SolutionItems>
+  <Project Path="Console/Console.csproj" />
+</Solution>
